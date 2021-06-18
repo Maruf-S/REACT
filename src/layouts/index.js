@@ -82,7 +82,7 @@ function Index (props) {
                     <div class="tabPanel">
                     <p></p>
                     <div class="row ">
-                        <Icard id={1} name={'sample movie'} img={'https://upload.wikimedia.org/wikipedia/en/thumb/d/db/The_Movies_Coverart.jpg/220px-The_Movies_Coverart.jpg'}/>
+                        <Icard id={1} name={'sample movie'} img={'https://media.gettyimages.com/photos/jessica-mauboy-attends-the-crown-img-tennis-party-on-january-19-2020-picture-id1200464741?s=612x612'}/>
                     </div>
                 </div>
 
@@ -101,7 +101,7 @@ function Index (props) {
                                 </i>
                             </p>
                             <h4>Reserve Your Seat before You Miss Tommorow!!</h4>
-                            <Link to="/auth/login"><button class="btn btn-lg btn-danger subButton">Subscribe</button></Link>
+                            <a to="/auth/login"><button class="btn btn-lg btn-danger subButton">Subscribe</button></a>
                         </div>
                     </div>
                 </div>
