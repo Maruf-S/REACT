@@ -15,95 +15,149 @@ var commentForm = document.querySelector("#comment");
 var commentArea = commentForm.querySelector(".commentArea");
 buyTicketsButton.addEventListener('click',buyTickets);
 commentForm.addEventListener('submit',submitComment);
+var baseUrl = "http://127.0.0.1:5000/";
 //Reference to all comments
-var allComments;
+var allComments = [];
 var movId;
 var movie;
-async function startUp(){
-    //Read vid Id from the URL
 const urlParams = new URLSearchParams(window.location.search);
 movId = Number(urlParams.get('id'));
-movie  = await getMovie(movId).then(document =>{
-    if(document !=6 ){
-        //Movie exists
-        //6 is the error code for object doesnot exist
-        return document;
-    }
-    else{
-        //Page not found
-        window.location.href = "404.html";
+async function getComments() {
+  return fetch(`${baseUrl}api/v1/comment/${movId}`, {
+     method: "GET",
+     headers: {"Content-type": "application/json; charset=UTF-8",
+              "Authorization": `JWT ${readLoginCookie()}`
+             },
+     })
+     .then(response =>response.json()) 
+ }
+async function startUp(){
+// movie  = await getMovie(movId).then(document =>{
+//     if(document !=6 ){
+//         //Movie exists
+//         //6 is the error code for object doesnot exist
+//         return document;
+//     }
+//     else{
+//         //Page not found
+//         window.location.href = "404.html";
 
-    }
+//     }
+// })
+
+//Read vid Id from the URL
+movie = await fetch(`${baseUrl}api/v1/movie/${movId}`, {
+      method: "GET",
+      headers: {"Content-type": "application/json; charset=UTF-8",
+              },
+      })
+      .then(response =>response.json())
+			.then(res=>{
+  return res;
 })
-allComments = getComments();
-document.title = `${movie['name']} | Dream Cinema` ;
-postorImage.src = `assets/images/Data/postors/${movie['postor']}`;
+console.log(movie)
+allComments = await getComments();
+document.title = `${movie['Title']} | Dream Cinema` ;
+postorImage.src = `assets/images/${movie['Postor']}`;
 document.querySelector('body').style.cssText = 
-`background:linear-gradient( rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5) ), url(assets/images/Data/covers/${movie['background']});
+`background:linear-gradient( rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5) ), url(assets/images/${movie['Background']});
 background-repeat: no-repeat;
 background-size: cover;
 background-position: center;
 background-attachment: fixed
 `;
-if(movie['ticket']!=="Available"){
+if(movie['Ticket']!=="Available"){
   //You can't buy the tickets
   buyTicketsButton.style.display = "none";
 }
-movieTitle.innerText = movie['name'];
-movieRelease.innerText = movie['release'];
-productionCompany.innerText = movie['aired'];
-IDMBrating.innerText = movie['idmbRating'];
+movieTitle.innerText = movie['Title'];
+movieRelease.innerText = movie['ReleaseDate'];
+productionCompany.innerText = movie['AiredBy'];
+IDMBrating.innerText = movie['IDMBRating'];
 //SetUpRating
-for (let index = 0; index < parseInt(movie['idmbRating'], 10); index++) {
+for (let index = 0; index < parseInt(movie['IDMBRating'], 10); index++) {
     var gen = document.createElement('span');
     gen.innerHTML = `<i class="fa fa-star px-1"></i>`
     ratingStarsContainner.appendChild(gen);
 }
-setUpComments();
 //ADDING GENRES
-var genre = movie['genre'];
-genre.forEach(element => {
-    var gen = document.createElement('span');
-    gen.innerHTML = `<a class="genere pl-2">${element}</a>`
-    genereContainer.appendChild(gen);
-});
+var genre = movie['Genre'];
+var gen = document.createElement('span');
+gen.innerHTML = `<a class="">${genre}</a>`
+genereContainer.appendChild(gen);
+
 /////////////
-movieDesc.innerText = movie['desc'];
-availableTickets.innerText = movie['ticket'];
-trailer.src = movie['trailer'];
+movieDesc.innerText = movie['Description'];
+availableTickets.innerText = movie['Ticket'];
+trailer.src = movie['Trailer'];
+
+const second = 1000,
+minute = second * 60,
+hour = minute * 60,
+day = hour * 24;
+//Even though screening dates are stored on the database since the databases are static we''ve decided to load a demo
+let targetDate = "2021-07-04T00:00:00"// movie['Screening'];
+countDown = moment(targetDate).toDate()
+setInterval(() => {
+let now = new Date().getTime();
+distance = countDown - now;
+document.getElementById("days").innerText = Math.floor(distance / (day)),
+  document.getElementById("hours").innerText = Math.floor((distance % (day)) / (hour)),
+  document.getElementById("minutes").innerText = Math.floor((distance % (hour)) / (minute)),
+  document.getElementById("seconds").innerText = Math.floor((distance % (minute)) / second);
+}, 1000);
 }
 startUp();
+setUpComments();
+
 async function setUpComments(){
     //Empty the comment container
     commentsContainer.innerHTML = '';
     allComments = await getComments();
     var commentsLen = 0;
     allComments.forEach(element => {
-        if(element['movId']===movId){
-            numComments.innerText = `(${++commentsLen}) Comments`;
-            var comU = document.createElement("div");
-            comU.innerHTML = `<div class="media my-4">
-            <img class="align-self-start rounded-circle mr-3" style="max-width: 64px;" src="https://st3.depositphotos.com/13159112/17145/v/600/depositphotos_171453724-stock-illustration-default-avatar-profile-icon-grey.jpg" alt="User">
-            <div class="media-body pl-3 leftBorder">
-              <h5 class="mt-0 text-white">${element['email']}</h5>
-              ${element['comment']}
-            </div>
-            <div class="text-muted d-inline cstext">${element['date']}</div>
-          </div>  `
-          commentsContainer.appendChild(comU);
-        }
+      numComments.innerText = `(${++commentsLen}) Comments`;
+      var comU = document.createElement("div");
+      comU.innerHTML = `<div class="media my-4">
+      <img class="align-self-start rounded-circle mr-3" style="max-width: 64px;" src="https://st3.depositphotos.com/13159112/17145/v/600/depositphotos_171453724-stock-illustration-default-avatar-profile-icon-grey.jpg" alt="User">
+      <div class="media-body pl-3 leftBorder">
+        <h5 class="mt-0 text-white">${element['Email']}</h5>
+        ${element['Comment']}
+      </div>
+      <div class="text-muted d-inline cstext">${moment(element['Date']).format("MMM Do YYYY")}</div>
+    </div>  `
+    commentsContainer.appendChild(comU);
     });
 }
 async function submitComment(e){
     e.preventDefault();
-    var userName = readLoginCookie();
-    if(!readLoginCookie()){
-        userName = "Anonymous user"
-    }
+    // var userName = readLoginCookie();
+    // if(!readLoginCookie()){
+    //     userName = "Anonymous user"
+    // }
     var commen = commentArea.value;
-    await addComment(userName, movId,commen);
-    allComments = await getComments();
-    setUpComments();
+    // await addComment(userName, movId,commen);
+      _data = {
+        "user_id": userId,
+        "movie_id": movId,
+        "comment": commen,
+        "rating": 0,
+        "date": "2021-06-28T12:20:30.895Z"
+      }
+      fetch(`${baseUrl}api/v1/comment`, {
+      method: "POST",
+      body: JSON.stringify(_data),
+      headers: {"Content-type": "application/json"
+          },
+          
+      }).then(response=>response.json())
+      .then(res=>console.log(res))
+      .then(e=>{
+        setUpComments();
+        commentArea.value="";
+      })
+    
+    
 }
 //#endregion
 function buyTickets(){
@@ -122,7 +176,7 @@ function buyTickets(){
       
       swalWithBootstrapButtons.fire({
         title: 'Confirm order',
-        text: `Are you sure you want to buy a ticket to ${movie['name']} ?`,
+        text: `Are you sure you want to buy a ticket to ${window.movie['Title']} ?`,
         icon: 'info',
         showCancelButton: true,
         cancelButtonText: 'No, cancel',
@@ -130,40 +184,51 @@ function buyTickets(){
         reverseButtons: true
       }).then((result) => {
         if (result.isConfirmed) {
-            buyTicket(readLoginCookie(),movie['id']).then(
-                guid =>{
-                    if(guid){
-                        swalWithBootstrapButtons.fire(
-                            'Ticket bought successfully',
-                            `Thankyou for working with us, your digital ticket will be sent to you next as well as a copy to ${readLoginCookie()}`,
-                            'success'
-                          ).then(
-                            e =>{
-                                Swal.fire({
-                                    html:
-                                    `<div>Ticket ID : <b>${guid}</b></div>
-                                    <div class="alert alert-warning mt-2" role="alert">
-                                    Please <span style='color: red;'>do not</span> share this QR code or ticket ID with anyone and Make sure to have a copy of this with you when you visit us, hope you catch a great show :)
-                                    </div>
-                                    `,
-                                    imageUrl: `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${guid}`,
-                                    imageWidth: 300,
-                                    imageHeight: 300,
-                                    imageAlt: 'Ticket ID',
-                                  })
-                            }
-                        )
-                    }
-                    else{
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Oops...',
-                            text: 'Sorry, Something went wrong. Please Try again later!',
-                            footer: `<a href='contactUs.html'>Report this issue.</a>`
-                          })
-                }
-                }
-            )
+          _data = {
+            "movie_id": movId
+          }
+          fetch(`${baseUrl}api/v1/ticket`, {
+              method: "POST",
+              body: JSON.stringify(_data),
+              headers: {"Content-type": "application/json",
+                      "Authorization": `JWT ${readLoginCookie()}`
+                      },
+                      
+              })
+              .then(response=>response.json())
+              .then(res=>{
+                console.log(res);
+                if(res['ticket_id']!=undefined){
+                  swalWithBootstrapButtons.fire(
+                      'Ticket bought successfully',
+                      `Thankyou for working with us, your digital ticket will be sent to you next as well as a copy to ${userEmail}`,
+                      'success'
+                    ).then(
+                      e =>{
+                          Swal.fire({
+                              html:
+                              `<div>Ticket ID : <b>${res['ticket_id']}</b></div>
+                              <div class="alert alert-warning mt-2" role="alert">
+                              Please <span style='color: red;'>do not</span> share this QR code or ticket ID with anyone and Make sure to have a copy of this with you when you visit us, hope you catch a great show :)
+                              </div>
+                              `,
+                              imageUrl: `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${res['ticket_id']}`,
+                              imageWidth: 300,
+                              imageHeight: 300,
+                              imageAlt: 'Ticket ID',
+                            })
+                      }
+                  )
+              }
+              else{
+                  Swal.fire({
+                      icon: 'error',
+                      title: 'Oops...',
+                      text: 'Sorry, Something went wrong. Please Try again later!',
+                      footer: `<a href='contactUs.html'>Report this issue.</a>`
+                    })
+          }
+              })
 
 
         }
@@ -176,18 +241,4 @@ function buyTickets(){
         }
       })
 }
-const second = 1000,
-minute = second * 60,
-hour = minute * 60,
-day = hour * 24;
-//Even though screening dates are stored on the database since the databases are static we''ve decided to load a demo
-let targetDate = "Jun 29, 2021 04:00:00";;
-countDown = new Date(targetDate).getTime();
-setInterval(() => {
-let now = new Date().getTime();
-distance = countDown - now;
-document.getElementById("days").innerText = Math.floor(distance / (day)),
-  document.getElementById("hours").innerText = Math.floor((distance % (day)) / (hour)),
-  document.getElementById("minutes").innerText = Math.floor((distance % (hour)) / (minute)),
-  document.getElementById("seconds").innerText = Math.floor((distance % (minute)) / second);
-}, 1000);
+

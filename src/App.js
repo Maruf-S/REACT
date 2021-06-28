@@ -2,7 +2,10 @@ import logo from './logo.svg';
 import './App.css';
 
 function App() {
-  return (<p>v</p>
+  return (
+  <p>
+    TEST APP
+  </p>
   );
 }
 

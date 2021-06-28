@@ -1,4 +1,13 @@
 @import url('https://fonts.googleapis.com/css?family=Quicksand:400,500,700');
+
+.fl{
+font-size: larger;
+}
+
+.cw{
+  color:white;
+}
+
 .navbar {
     position: fixed;
     width: 100%;

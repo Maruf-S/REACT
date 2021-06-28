@@ -5,6 +5,6 @@ import './index.css';
 
 import Index from './layouts/index'
 ReactDOM.render(
-  <Index/>,
+  <Index/>, 
   document.getElementById('root')
 );

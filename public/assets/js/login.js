@@ -69,6 +69,7 @@ async function addUser(e){
     return;
   }
   let response = await SignUpUser(signUpEmail.value,signUpPassword.value);
+  // alert(response)
   switch(response) {
     case 1:
       await SignInUser(signUpEmail.value,signUpPassword.value);
@@ -94,7 +95,7 @@ const signInEmail = signInForm.querySelector('.emailform');
 const signInPassword = signInForm.querySelector('.password');
 const signInConfirmPassword = signInForm.querySelector('.confirmPassword');
 signInForm.addEventListener('submit', logInUser);
-
+console.log(jwtToken);
 async function logInUser(e){
   e.preventDefault();
   let response = await SignInUser(signInEmail.value,signInPassword.value);
